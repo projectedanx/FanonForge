@@ -9,6 +9,12 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
+/**
+ * Parses a JSON string, safely handling potential surrounding markdown code fences.
+ * @template T The expected type of the parsed JSON object.
+ * @param {string} text The raw string response from the API.
+ * @returns {T | null} The parsed object, or null if parsing fails.
+ */
 const parseJsonResponse = <T,>(text: string): T | null => {
     try {
         const cleanedText = text.replace(/^```json\s*|```\s*$/g, '').trim();
@@ -21,7 +27,16 @@ const parseJsonResponse = <T,>(text: string): T | null => {
     }
 };
 
+/**
+ * A service object that encapsulates all interactions with the Gemini API.
+ */
 const geminiService = {
+    /**
+     * Analyzes a description of an intellectual property (IP).
+     * @param {string} ipInput A text description of the IP to analyze.
+     * @returns {Promise<AnalysisResult>} A promise that resolves to the analysis result.
+     * @throws {Error} If the API call fails or returns an invalid response.
+     */
     analyzeIP: async (ipInput: string): Promise<AnalysisResult> => {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -48,6 +63,12 @@ Return the analysis as a JSON object with keys: "characteristics", "tropes", "mo
         return result;
     },
 
+    /**
+     * Explores common fan-created tropes associated with a given IP.
+     * @param {string} ipInput A text description of the IP.
+     * @returns {Promise<string[]>} A promise that resolves to an array of trope strings.
+     * @throws {Error} If the API call fails or returns an invalid response.
+     */
     exploreTropes: async (ipInput: string): Promise<string[]> => {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -74,6 +95,12 @@ Return the result as a JSON object with a single key "tropes" which is an array 
         return result.tropes;
     },
 
+    /**
+     * Generates transformative twists for a given IP across different creative categories.
+     * @param {string} ipInput A text description of the IP.
+     * @returns {Promise<TwistResult>} A promise that resolves to an object containing the generated twists.
+     * @throws {Error} If the API call fails or returns an invalid response.
+     */
     generateTwists: async (ipInput: string): Promise<TwistResult> => {
          const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -100,6 +127,12 @@ Return the result as a JSON object with keys: "conceptualBlending", "dimensional
         return result;
     },
     
+    /**
+     * Generates a narrative based on source material and a specific instruction.
+     * @param {string} ipInput The source IP or material.
+     * @param {string} promptInstruction The specific instruction for the narrative generation.
+     * @returns {Promise<string>} A promise that resolves to the generated narrative text.
+     */
     generateNarrative: async (ipInput: string, promptInstruction: string): Promise<string> => {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -108,6 +141,13 @@ Return the result as a JSON object with keys: "conceptualBlending", "dimensional
         return response.text;
     },
 
+    /**
+     * Assesses the potential copyright risk of a generated text compared to an original IP.
+     * @param {string} originalIp The original source material.
+     * @param {string} generatedText The AI-generated text to assess.
+     * @returns {Promise<RiskResult>} A promise that resolves to the risk assessment result.
+     * @throws {Error} If the API call fails or returns an invalid response.
+     */
     assessRisk: async (originalIp: string, generatedText: string): Promise<RiskResult> => {
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
