@@ -1,0 +1,7 @@
+{
+  "name": "Fanon Forge",
+  "description": "An AI-powered tool to help creators generate transformative narratives based on existing intellectual property, while providing tools to assess and enhance 'transformative use' to foster originality and navigate copyright considerations.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
