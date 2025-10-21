@@ -4,37 +4,60 @@ import type { AnalysisResult, TwistResult, RiskResult, Project } from './types';
 
 // --- Helper & UI Components (defined outside App to prevent re-renders) ---
 
+/**
+ * Renders a sparkling icon.
+ * @param {{ className?: string }} props The component props.
+ * @returns {JSX.Element} The rendered SVG icon.
+ */
 const IconSparkles: React.FC<{ className?: string }> = ({ className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 2C11.45 2 11 2.45 11 3V4.05C9.81 4.41 8.78 5.15 8 6.09L7.3 5.39C6.91 5 6.28 5 5.89 5.39L5.39 5.89C5 6.28 5 6.91 5.39 7.3L6.09 8C5.15 8.78 4.41 9.81 4.05 11H3C2.45 11 2 11.45 2 12C2 12.55 2.45 13 3 13H4.05C4.41 14.19 5.15 15.22 6.09 16L5.39 16.7C5 17.09 5 17.72 5.39 18.11L5.89 18.61C6.28 19 6.91 19 7.3 18.61L8 17.91C8.78 18.85 9.81 19.59 11 19.95V21C11 21.55 11.45 22 12 22C12.55 22 13 21.55 13 21V19.95C14.19 19.59 15.22 18.85 16 17.91L16.7 18.61C17.09 19 17.72 19 18.11 18.61L18.61 18.11C19 17.72 19 17.09 18.61 16.7L17.91 16C18.85 15.22 19.59 14.19 19.95 13H21C21.55 13 22 12.55 22 12C22 11.45 21.55 11 21 11H19.95C19.59 9.81 18.85 8.78 17.91 8L18.61 7.3C19 6.91 19 6.28 18.61 5.89L18.11 5.39C17.72 5 17.09 5 16.7 5.39L16 6.09C15.22 5.15 14.19 4.41 13 4.05V3C13 2.45 12.55 2 12 2ZM12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7Z" />
   </svg>
 );
-
+/**
+ * Renders a folder icon.
+ * @param {{ className?: string }} props The component props.
+ * @returns {JSX.Element} The rendered SVG icon.
+ */
 const IconFolder: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M10 4H4c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
     </svg>
 );
-
+/**
+ * Renders a microphone icon.
+ * @param {{ className?: string }} props The component props.
+ * @returns {JSX.Element} The rendered SVG icon.
+ */
 const IconMicrophone: React.FC<{ className?: string }> = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" />
     </svg>
 );
-
+/**
+ * Renders a loading spinner.
+ * @returns {JSX.Element} The rendered loader component.
+ */
 const Loader: React.FC = () => (
   <div className="flex justify-center items-center p-4">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-accent"></div>
   </div>
 );
-
+/**
+ * Renders a disclaimer notice about the AI-generated content.
+ * @returns {JSX.Element} The rendered disclaimer component.
+ */
 const Disclaimer: React.FC = () => (
   <div className="bg-yellow-900/50 border border-yellow-700 text-yellow-300 px-4 py-3 rounded-lg relative my-4" role="alert">
     <strong className="font-bold">Advisory Notice: </strong>
     <span className="block sm:inline">This is an AI-generated advisory for creative exploration, not legal advice. Always consult with a legal professional for copyright matters.</span>
   </div>
 );
-
+/**
+ * Renders a content section with a title and an optional icon.
+ * @param {{ title: string; children: React.ReactNode; icon?: React.ReactNode }} props The component props.
+ * @returns {JSX.Element} The rendered section component.
+ */
 const Section: React.FC<{ title: string; children: React.ReactNode; icon?: React.ReactNode }> = ({ title, children, icon }) => (
     <div className="bg-brand-surface rounded-lg shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-brand-accent mb-4 flex items-center">
@@ -50,30 +73,72 @@ const Section: React.FC<{ title: string; children: React.ReactNode; icon?: React
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 const LOCAL_STORAGE_KEY = 'fanonForgeProjects';
-
+/**
+ * The main application component for Fanon Forge.
+ * It manages state for user inputs, API responses, and project data.
+ * @returns {JSX.Element} The rendered App component.
+ */
 export default function App() {
   // --- Core State ---
+  /**
+   * @state {string} ipInput - The user's input describing the intellectual property.
+   */
   const [ipInput, setIpInput] = useState<string>('');
+  /**
+   * @state {string} generatedText - The AI-generated narrative text.
+   */
   const [generatedText, setGeneratedText] = useState<string>('');
   
+  /**
+   * @state {AnalysisResult | null} analysis - The analysis result of the source IP.
+   */
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  /**
+   * @state {TwistResult | null} twists - The generated transformative twists.
+   */
   const [twists, setTwists] = useState<TwistResult | null>(null);
+  /**
+   * @state {string[] | null} tropes - The list of common fandom tropes.
+   */
   const [tropes, setTropes] = useState<string[] | null>(null);
+  /**
+   * @state {RiskResult | null} risk - The copyright risk assessment of the generated text.
+   */
   const [risk, setRisk] = useState<RiskResult | null>(null);
-
+  /**
+   * @state {Record<string, boolean>} isLoading - A record of loading states for various API calls.
+   */
   const [isLoading, setIsLoading] = useState<Record<string, boolean>>({});
+  /**
+   * @state {string | null} error - An error message to be displayed to the user.
+   */
   const [error, setError] = useState<string | null>(null);
   
   // --- Narrative Divergence State ---
+  /**
+   * @state {string} narrativeLength - The desired length of the generated narrative.
+   */
   const [narrativeLength, setNarrativeLength] = useState<string>('about 150-200 words');
+  /**
+   * @state {string} narrativeTone - The desired tone of the generated narrative.
+   */
   const [narrativeTone, setNarrativeTone] = useState<string>('');
 
   // --- Voice Input State ---
+  /**
+   * @state {boolean} isListening - Whether the speech recognition is currently active.
+   */
   const [isListening, setIsListening] = useState(false);
+  /**
+   * @state {boolean} isSpeechRecognitionSupported - Whether the browser supports the SpeechRecognition API.
+   */
   const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   // --- Project Management State ---
+  /**
+   * @state {Project[]} projects - The list of saved user projects.
+   */
   const [projects, setProjects] = useState<Project[]>([]);
   
   // --- Effects ---
@@ -118,6 +183,9 @@ export default function App() {
   }, []);
 
   // --- Voice Input ---
+  /**
+   * Toggles the speech recognition listening state.
+   */
   const handleToggleListening = () => {
     if (!isSpeechRecognitionSupported) return;
 
@@ -130,6 +198,10 @@ export default function App() {
   };
 
   // --- Project Management ---
+  /**
+   * Updates the projects state and saves it to localStorage.
+   * @param {Project[]} newProjects The new array of projects to save.
+   */
   const updateProjects = (newProjects: Project[]) => {
       try {
           setProjects(newProjects);
@@ -139,7 +211,9 @@ export default function App() {
           setError("Could not save project. Your browser's storage may be full.");
       }
   };
-
+  /**
+   * Handles saving the current state as a new project.
+   */
   const handleSaveProject = () => {
       const name = prompt("Enter a name for your project:");
       if (!name) return;
@@ -166,7 +240,10 @@ export default function App() {
           updateProjects([...projects, newProject]);
       }
   };
-
+  /**
+   * Handles loading a saved project's data into the application state.
+   * @param {string} projectName The name of the project to load.
+   */
   const handleLoadProject = (projectName: string) => {
       const projectToLoad = projects.find(p => p.name === projectName);
       if (projectToLoad) {
@@ -179,7 +256,10 @@ export default function App() {
           alert(`Project "${projectName}" loaded.`);
       }
   };
-
+  /**
+   * Handles deleting a saved project.
+   * @param {string} projectName The name of the project to delete.
+   */
   const handleDeleteProject = (projectName: string) => {
       if (confirm(`Are you sure you want to delete the project "${projectName}"?`)) {
           const updatedProjects = projects.filter(p => p.name !== projectName);
@@ -188,6 +268,14 @@ export default function App() {
   };
 
   // --- Gemini API Calls ---
+  /**
+   * A generic handler for making calls to the Gemini API.
+   * Manages loading and error states for each call.
+   * @template T The expected type of the API response.
+   * @param {string} key A unique key to track the loading state of this specific call.
+   * @param {() => Promise<T>} serviceFunc The API service function to call.
+   * @param {(result: T) => void} onSuccess A callback to handle the successful API response.
+   */
   const handleGeminiCall = useCallback(async <T,>(
     key: string,
     serviceFunc: () => Promise<T>,
@@ -204,29 +292,45 @@ export default function App() {
       setIsLoading(prev => ({ ...prev, [key]: false }));
     }
   }, []);
-
+  /**
+   * Initiates an analysis of the source IP.
+   */
   const analyzeIP = () => {
     handleGeminiCall('analyze', () => geminiService.analyzeIP(ipInput), setAnalysis);
   };
   
+  /**
+   * Explores fandom tropes related to the source IP.
+   */
   const exploreTropes = () => {
     handleGeminiCall('tropes', () => geminiService.exploreTropes(ipInput), setTropes);
   };
-
+  /**
+   * Generates transformative twists based on the source IP.
+   */
   const generateTwists = () => {
     handleGeminiCall('twists', () => geminiService.generateTwists(ipInput), setTwists);
   };
   
+  /**
+   * Generates a narrative divergence based on the user's length and tone preferences.
+   */
   const generateDivergence = () => {
       const prompt = `Suggest a 'what happened next?' scenario or a retelling from a different perspective. The narrative should be ${narrativeLength}. ${narrativeTone ? `The tone should be ${narrativeTone}.` : ''}`.trim();
       handleGeminiCall('divergence', () => geminiService.generateNarrative(ipInput, prompt), setGeneratedText);
   };
   
+  /**
+   * Generates a narrative with a specified level of deviation from the source material.
+   * @param {'Low' | 'Medium' | 'High'} level The desired level of deviation.
+   */
   const generateWithDeviation = (level: 'Low' | 'Medium' | 'High') => {
       const prompt = `Generate a short narrative based on the source material, but with a ${level.toLowerCase()} level of stylistic and thematic deviation to foster originality.`;
       handleGeminiCall(`deviation-${level}`, () => geminiService.generateNarrative(ipInput, prompt), setGeneratedText);
   };
-
+  /**
+   * Assesses the copyright risk of the generated narrative.
+   */
   const assessRisk = () => {
     if (!generatedText) return;
     handleGeminiCall('risk', () => geminiService.assessRisk(ipInput, generatedText), setRisk);
